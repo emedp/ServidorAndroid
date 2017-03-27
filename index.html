@@ -1,0 +1,50 @@
+<!DOCTYPE HTML>
+<html>
+<head>
+<meta charset="utf-8">
+<!DOCTYPE HTML>
+<html>
+<head>
+<meta charset="utf-8">
+<title>Chat example</title>
+<script>
+var connection
+window.addEventListener("load", function () {
+	var nickname = prompt("Choose a nickname")
+	if (nickname) {
+		connection = new WebSocket("wss://"+window.location.hostname+":8081")
+		connection.onopen = function () {
+			console.log("Connection opened")
+			connection.send("{\"id\":\""+nickname+"\"}")
+			document.getElementById("form").onsubmit = function (event) {
+				var msg = document.getElementById("msg")
+				var msgJson = "{\"id\":\""+nickname+"\",\"msg\":\""+msg.value+"\"}"
+				if (msg.value)
+					connection.send(msgJson)
+				msg.value = ""
+				event.preventDefault()
+			}	
+		}
+		connection.onclose = function () {
+			console.log("Connection closed")
+		}
+		connection.onerror = function () {
+			console.error("Connection error")
+		}
+		connection.onmessage = function (event) {
+			var div = document.createElement("div")
+			var obj = JSON.parse(event.data)
+			div.textContent = obj.id+": "+obj.msg
+			document.body.appendChild(div)
+		}
+	}
+})
+</script>
+</head>
+
+<body>
+<form id="form">
+Message: <input size="50" id="msg"> <input type="submit" value="Submit">
+</form>
+</body>
+</html>
